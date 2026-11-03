@@ -1,0 +1,117 @@
+<!doctype html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title>Microwave Anomaly Detector</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1"></script>
+    <style>
+        body {
+            font-family: sans-serif;
+            background: #111827;
+            color: #e5e7eb;
+            max-width: 900px;
+            margin: 20px auto;
+            padding: 0 12px
+        }
+
+        .card {
+            background: #1f2937;
+            padding: 16px;
+            border-radius: 10px;
+            margin-bottom: 14px
+        }
+
+        input,
+        select,
+        button {
+            padding: 8px;
+            margin: 4px;
+            border-radius: 6px;
+            border: 0
+        }
+
+        button {
+            background: #3b82f6;
+            color: #fff;
+            cursor: pointer
+        }
+
+        #res {
+            font-size: 1.4em;
+            font-weight: bold;
+            margin-top: 8px
+        }
+
+        .ok {
+            color: #34d399
+        }
+
+        .bad {
+            color: #f87171
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse
+        }
+
+        td,
+        th {
+            padding: 4px;
+            border-bottom: 1px solid #374151;
+            text-align: left
+        }
+    </style>
+</head>
+
+<body>
+    <h2>Smart Electricity Consumption Monitoring - Microwave Anomaly Detector</h2>
+    <div class="card">
+        <select id="model">
+            <option value="IF">Isolation Forest</option>
+            <option value="LOF" selected>LOF</option>
+            <option value="OCSVM">One-Class SVM</option>
+        </select><br>
+        <input id="prev" type="number" placeholder="Previous power (W)">
+        <input id="pow" type="number" placeholder="Current power (W)">
+        <input id="volt" type="number" placeholder="Voltage (V)" value="230">
+        <button onclick="send()">Detect</button><br>
+        <button onclick="preset(1,1)">Normal</button><button onclick="preset(1,2.2)">Sudden spike</button><button
+            onclick="preset(1,.4)">Sudden drop</button><button onclick="reset()">Reset</button><button
+            onclick="demo()">Run demo sequence</button>
+        <div id="res"></div>
+    </div>
+    <div class="card"><canvas id="ch" height="90"></canvas></div>
+    <div class="card">
+        <h3>Model comparison (mean of 30 evaluation runs)</h3>
+        <div id="met"></div>
+    </div>
+    <div class="card">
+        <h3>Detection log</h3>
+        <table id="log"></table>
+    </div>
+    <script>
+        let MEAN = 1000;
+        const ch = new Chart(document.getElementById('ch'), { type: 'line', data: { labels: [], datasets: [{ label: 'Power (W)', data: [], borderColor: '#60a5fa', pointBackgroundColor: [], pointRadius: 6 }] } });
+        function preset(a, b) { prev.value = Math.round(MEAN * a); pow.value = Math.round(MEAN * b) }
+        async function send() {
+            const r = await fetch('/predict', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ model: model.value, prev_power: +prev.value, power: +pow.value, voltage: +volt.value }) });
+            const d = await r.json(); if (d.error) { res.innerHTML = '<span class=bad>' + d.error + '</span>'; return }
+            res.innerHTML = d.anomaly ? `<span class=bad>ANOMALY (score ${d.score}) - change ${d.delta} W, ${d.current} A</span>` : `<span class=ok>Normal (score ${d.score}) - ${d.current} A</span>`;
+            ch.data.labels.push(d.time); ch.data.datasets[0].data.push(d.power); ch.data.datasets[0].pointBackgroundColor.push(d.anomaly ? '#f87171' : '#34d399'); ch.update(); prev.value = pow.value; loadLog()
+        }
+        async function reset() { await fetch('/api/reset', { method: 'POST' }); ch.data.labels = []; ch.data.datasets[0].data = []; ch.data.datasets[0].pointBackgroundColor = []; ch.update(); res.innerHTML = ''; log.innerHTML = '' }
+        async function demo() {
+            await reset(); prev.value = Math.round(MEAN); const seq = [...Array(12).fill(1), ...Array(6).fill(2.2), ...Array(12).fill(1)];
+            for (const f of seq) { pow.value = Math.round(MEAN * f); await send(); await new Promise(r => setTimeout(r, 700)) }
+        }
+        async function loadLog() { const l = await (await fetch('/api/log')).json(); log.innerHTML = '<tr><th>Time</th><th>Model</th><th>Power</th><th>Change</th><th>Result</th></tr>' + l.map(x => `<tr><td>${x.time}</td><td>${x.model}</td><td>${x.power}</td><td>${x.delta}</td><td class=${x.anomaly ? 'bad' : 'ok'}>${x.anomaly ? 'ANOMALY' : 'normal'}</td></tr>`).join('') }
+        (async () => {
+            try { MEAN = (await (await fetch('/api/info')).json()).mean_power; preset(1, 1) } catch (e) { }
+            try { const m = (await (await fetch('/api/metrics')).json()).microwave.models; met.innerHTML = '<table><tr><th>Model</th><th>Detection</th><th>False alarm</th><th>Fit s</th><th>Predict s</th></tr>' + Object.entries(m).map(([k, v]) => `<tr><td>${k}</td><td>${v.detection_rate}</td><td>${v.false_alarm_rate}</td><td>${v.fit_s}</td><td>${v.predict_s}</td></tr>`).join('') + '</table>' } catch (e) { }
+        })();
+    </script>
+</body>
+
+</html>

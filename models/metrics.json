@@ -1,0 +1,24 @@
+{
+ "microwave": {
+  "models": {
+   "IF": {
+    "detection_rate": 0.081,
+    "false_alarm_rate": 0.016,
+    "fit_s": 0.295,
+    "predict_s": 0.019
+   },
+   "LOF": {
+    "detection_rate": 0.305,
+    "false_alarm_rate": 0.023,
+    "fit_s": 0.045,
+    "predict_s": 0.009
+   },
+   "OCSVM": {
+    "detection_rate": 0.197,
+    "false_alarm_rate": 0.031,
+    "fit_s": 0.016,
+    "predict_s": 0.005
+   }
+  }
+ }
+}
