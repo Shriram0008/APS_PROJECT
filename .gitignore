@@ -6,3 +6,5 @@ data/*.csv
 *.zip
 .vscode/
 temp/
+make_figures.py/
+figures/
