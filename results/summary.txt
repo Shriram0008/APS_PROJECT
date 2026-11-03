@@ -1,0 +1,6 @@
+Train rows 19865 | test rows 4580 (faults 321) | blocks 229 | seed 42
+baseline_IF: acc 0.916 [0.908, 0.924] | prec 0.254 | recall 0.103 [0.074, 0.141] | F1 0.146 [0.091, 0.197]
+improved_LOF: acc 0.943 [0.936, 0.95] | prec 0.650 | recall 0.417 [0.365, 0.472] | F1 0.509 [0.389, 0.609]
+F1 diff (LOF-IF) 0.362 | 95% bootstrap CI [0.271, 0.44] | SE 0.044
+McNemar b=78 c=204 p=3.654e-14 | block-permutation p=0.0002 | alpha=0.05
+Decision: Reject H0: the F1 difference is unlikely to be due to test-sample variation

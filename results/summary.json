@@ -1,0 +1,64 @@
+{
+ "n_train": 19865,
+ "n_test": 4580,
+ "n_fault_rows": 321,
+ "n_blocks": 229,
+ "models": {
+  "baseline_IF": {
+   "accuracy": 0.915938864628821,
+   "accuracy_wilson_ci": [
+    0.9075499817947559,
+    0.923630597688073
+   ],
+   "precision": 0.25384615384615383,
+   "recall": 0.102803738317757,
+   "recall_wilson_ci": [
+    0.07414214632775781,
+    0.1408595319501531
+   ],
+   "f1": 0.14634146341463414,
+   "tp": 33,
+   "fp": 97,
+   "fn": 288,
+   "f1_boot_ci": [
+    0.09067707325463889,
+    0.19700273835205334
+   ]
+  },
+  "improved_LOF": {
+   "accuracy": 0.9434497816593886,
+   "accuracy_wilson_ci": [
+    0.9363811630640498,
+    0.9497751397861472
+   ],
+   "precision": 0.6504854368932039,
+   "recall": 0.4174454828660436,
+   "recall_wilson_ci": [
+    0.3647862238931082,
+    0.47205726218033994
+   ],
+   "f1": 0.50853889943074,
+   "tp": 134,
+   "fp": 72,
+   "fn": 187,
+   "f1_boot_ci": [
+    0.38925955269241763,
+    0.6092164824923445
+   ]
+  }
+ },
+ "difference": {
+  "f1_diff": 0.3621974360161059,
+  "boot_ci95": [
+   0.2707075857409347,
+   0.4397721342882761
+  ],
+  "boot_se": 0.04395875240353616,
+  "mcnemar_b_IF_right_LOF_wrong": 78,
+  "mcnemar_c_LOF_right_IF_wrong": 204,
+  "mcnemar_p": 3.653664660734214e-14,
+  "permutation_p": 0.0001999600079984003,
+  "alpha": 0.05
+ },
+ "decision": "Reject H0: the F1 difference is unlikely to be due to test-sample variation"
+}
